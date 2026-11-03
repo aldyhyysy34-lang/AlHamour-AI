@@ -1,1 +1,130 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>الهامور AI</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Tahoma,Arial;
+background:#101827;
+color:white
+}
+header{
+padding:18px;
+background:#172438;
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid #293b53
+}
+.logo{font-size:23px;color:#38d9c5;font-weight:bold}
+main{max-width:750px;margin:auto;padding:20px}
+.welcome{text-align:center;margin-top:65px}
+.avatar{
+width:85px;height:85px;margin:auto;
+border-radius:50%;
+background:linear-gradient(135deg,#16bba9,#3658ad);
+display:flex;align-items:center;justify-content:center;
+font-size:40px
+}
+h2{color:#38d9c5}
+p{color:#aab8ca;line-height:1.8}
+#chat{padding-bottom:100px}
+.message{padding:14px;margin:12px 0;border-radius:14px;line-height:1.8;white-space:pre-wrap}
+.user{background:#234c66;margin-right:35px}
+.bot{background:#202e42;margin-left:35px}
+.controls{
+position:fixed;bottom:0;left:0;right:0;
+background:#172438;padding:12px;display:flex;gap:8px
+}
+input{
+flex:1;min-width:0;padding:14px;
+border-radius:12px;border:1px solid #40536c;
+background:#101827;color:white
+}
+button{
+border:0;border-radius:12px;padding:12px;
+background:#13b9a7;color:#071b25;font-weight:bold
+}
+.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.tools button{background:#263a52;color:white;margin-top:15px}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">الهامور AI 🧠</div>
+<div style="color:#39dba7">● جاهز</div>
+</header>
+
+<main>
+<section class="welcome" id="welcome">
+<div class="avatar">🐬</div>
+<h2>مرحباً بك في الهامور AI</h2>
+<p>مساعدك الشخصي الذكي.<br>
+أنا هنا لمساعدتك في التعلم والبرمجة والبحث.</p>
+
+<div class="tools">
+<button onclick="quick('ساعدني في البرمجة')">💻 البرمجة</button>
+<button onclick="quick('أريد كتابة تقرير')">📄 التقارير</button>
+<button onclick="quick('اشرح الذكاء الاصطناعي')">🧠 التعلم</button>
+</div>
+</section>
+
+<div id="chat"></div>
+</main>
+
+<div class="controls">
+<button onclick="voice()">🎙️</button>
+<input id="input" placeholder="اكتب رسالتك هنا...">
+<button onclick="send()">إرسال</button>
+</div>
+
+<script>
+const input=document.getElementById("input");
+const chat=document.getElementById("chat");
+
+function add(text,type){
+let d=document.createElement("div");
+d.className="message "+type;
+d.textContent=text;
+chat.appendChild(d);
+window.scrollTo(0,document.body.scrollHeight);
+}
+
+function send(){
+let t=input.value.trim();
+if(!t)return;
+document.getElementById("welcome").style.display="none";
+add(t,"user");
+add("وصلت رسالتك! أنا الهامور AI، وما زلت في مرحلة تجهيز محرك الذكاء الاصطناعي.","bot");
+let h=JSON.parse(localStorage.getItem("hamour_history")||"[]");
+h.push({role:"user",content:t});
+localStorage.setItem("hamour_history",JSON.stringify(h));
+input.value="";
+}
+
+function quick(t){input.value=t;send();}
+
+input.addEventListener("keydown",e=>{
+if(e.key==="Enter")send();
+});
+
+function voice(){
+let R=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!R){alert("التعرف الصوتي غير مدعوم");return;}
+let r=new R();
+r.lang="ar-SA";
+r.onresult=e=>{input.value=e.results[0][0].transcript;};
+r.start();
+}
+</script>
+
+</body>
+</html>
