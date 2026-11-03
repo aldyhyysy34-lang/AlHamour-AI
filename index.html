@@ -87,42 +87,104 @@ background:#13b9a7;color:#071b25;font-weight:bold
 </div>
 
 <script>
-const input=document.getElementById("input");
-const chat=document.getElementById("chat");
+const API_URL = "https://sparkling-sun-2cc0hamour-ai-api.hammerai323.workers.dev/chat";
 
-function add(text,type){
-let d=document.createElement("div");
-d.className="message "+type;
-d.textContent=text;
-chat.appendChild(d);
-window.scrollTo(0,document.body.scrollHeight);
+const input = document.getElementById("input");
+const chat = document.getElementById("chat");
+
+let history = JSON.parse(
+  localStorage.getItem("hamour_history") || "[]"
+);
+
+function add(text, type) {
+  let d = document.createElement("div");
+  d.className = "message " + type;
+  d.textContent = text;
+  chat.appendChild(d);
+  window.scrollTo(0, document.body.scrollHeight);
+  return d;
 }
 
-function send(){
-let t=input.value.trim();
-if(!t)return;
-document.getElementById("welcome").style.display="none";
-add(t,"user");
-add("وصلت رسالتك! أنا الهامور AI، وما زلت في مرحلة تجهيز محرك الذكاء الاصطناعي.","bot");
-let h=JSON.parse(localStorage.getItem("hamour_history")||"[]");
-h.push({role:"user",content:t});
-localStorage.setItem("hamour_history",JSON.stringify(h));
-input.value="";
+async function send() {
+  let t = input.value.trim();
+  if (!t) return;
+
+  document.getElementById("welcome").style.display = "none";
+
+  add(t, "user");
+
+  history.push({
+    role: "user",
+    content: t
+  });
+
+  input.value = "";
+  input.disabled = true;
+
+  let loading = add("الهامور يفكر... 🧠", "bot");
+
+  try {
+    let response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: history.slice(-12)
+      })
+    });
+
+    let data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.details || data.error || "فشل الاتصال");
+    }
+
+    loading.textContent = data.reply;
+
+    history.push({
+      role: "assistant",
+      content: data.reply
+    });
+
+    localStorage.setItem(
+      "hamour_history",
+      JSON.stringify(history)
+    );
+
+  } catch (error) {
+    loading.textContent =
+      "عذراً، حدث خطأ في الاتصال: " + error.message;
+  }
+
+  input.disabled = false;
+  input.focus();
 }
 
-function quick(t){input.value=t;send();}
+function quick(t) {
+  input.value = t;
+  send();
+}
 
-input.addEventListener("keydown",e=>{
-if(e.key==="Enter")send();
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") send();
 });
 
-function voice(){
-let R=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!R){alert("التعرف الصوتي غير مدعوم");return;}
-let r=new R();
-r.lang="ar-SA";
-r.onresult=e=>{input.value=e.results[0][0].transcript;};
-r.start();
+function voice() {
+  let R = window.SpeechRecognition ||
+          window.webkitSpeechRecognition;
+
+  if (!R) {
+    alert("التعرف الصوتي غير مدعوم");
+    return;
+  }
+
+  let r = new R();
+  r.lang = "ar-SA";
+  r.onresult = e => {
+    input.value = e.results[0][0].transcript;
+  };
+  r.start();
 }
 </script>
 
